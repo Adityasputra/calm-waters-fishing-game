@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../config/db");
 const { getFish } = require("../utils/rng");
-
-const prisma = new PrismaClient();
 
 const rewards = {
   normal: { gold: 2, points: 2 },
@@ -10,21 +8,35 @@ const rewards = {
 };
 
 exports.fish = async (req, res) => {
-  const userId = req.user.id;
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  try {
+    const userId = req.user.id;
 
-  const fish = getFish(user.rodLevel);
-  if (!fish) return res.json({ message: "Fish escaped" });
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
 
-  const reward = rewards[fish];
-
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      gold: { increment: reward.gold },
-      points: { increment: reward.points }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  });
 
-  res.json({ fish, reward, user: updated });
+    const fish = getFish(user.rodLevel);
+    if (!fish) {
+      return res.json({ message: "Fish escaped" });
+    }
+
+    const reward = rewards[fish];
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        gold: { increment: reward.gold },
+        points: { increment: reward.points }
+      }
+    });
+
+    res.json({ fish, reward, user: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Fishing failed" });
+  }
 };

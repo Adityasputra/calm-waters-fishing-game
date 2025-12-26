@@ -1,7 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../config/db"); 
 const jwt = require("jsonwebtoken");
-
-const prisma = new PrismaClient();
 
 exports.guestLogin = async (req, res) => {
   const user = await prisma.user.create({
