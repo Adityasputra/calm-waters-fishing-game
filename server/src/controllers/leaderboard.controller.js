@@ -1,15 +1,15 @@
 const prisma = require("../config/db");
 
 exports.getLeaderboard = async (req, res) => {
-  const leaderboard = await prisma.user.findMany({
+  const data = await prisma.user.findMany({
+    where: { isVerified: true },
     orderBy: { points: "desc" },
-    take: 50,
+    take: 10,
     select: {
-      id: true,
-      points: true,
-      rodLevel: true
+      email: true,
+      points: true
     }
   });
 
-  res.json(leaderboard);
+  res.json(data);
 };

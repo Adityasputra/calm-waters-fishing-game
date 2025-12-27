@@ -8,7 +8,7 @@ const MIN_ROD_LEVEL = 1;
 const rewards = {
   normal: { gold: 2, points: 2 },
   rare: { gold: 5, points: 5 },
-  epic: { gold: 10, points: 10 }
+  epic: { gold: 10, points: 10 },
 };
 
 exports.fish = async (req, res) => {
@@ -26,8 +26,8 @@ exports.fish = async (req, res) => {
         id: true,
         rodLevel: true,
         gold: true,
-        points: true
-      }
+        points: true,
+      },
     });
 
     if (!user) {
@@ -35,23 +35,27 @@ exports.fish = async (req, res) => {
     }
 
     // Validate rod level
-    if (!user.rodLevel || user.rodLevel < MIN_ROD_LEVEL || user.rodLevel > MAX_ROD_LEVEL) {
+    if (
+      !user.rodLevel ||
+      user.rodLevel < MIN_ROD_LEVEL ||
+      user.rodLevel > MAX_ROD_LEVEL
+    ) {
       console.error(`Invalid rod level for user ${userId}: ${user.rodLevel}`);
       return res.status(400).json({ message: "Invalid rod level" });
     }
 
     const fish = getFish(user.rodLevel);
-    
+
     // No catch this time
     if (!fish) {
-      return res.json({ 
+      return res.json({
         success: false,
         message: "Fish escaped",
         user: {
           gold: user.gold,
           points: user.points,
-          rodLevel: user.rodLevel
-        }
+          rodLevel: user.rodLevel,
+        },
       });
     }
 
@@ -63,8 +67,12 @@ exports.fish = async (req, res) => {
     }
 
     // Validate reward values
-    if (typeof reward.gold !== 'number' || typeof reward.points !== 'number' || 
-        reward.gold < 0 || reward.points < 0) {
+    if (
+      typeof reward.gold !== "number" ||
+      typeof reward.points !== "number" ||
+      reward.gold < 0 ||
+      reward.points < 0
+    ) {
       console.error(`Invalid reward values for ${fish}:`, reward);
       return res.status(500).json({ message: "Invalid reward configuration" });
     }
@@ -73,21 +81,36 @@ exports.fish = async (req, res) => {
       where: { id: userId },
       data: {
         gold: { increment: reward.gold },
-        points: { increment: reward.points }
+        points: { increment: reward.points },
       },
       select: {
         id: true,
         gold: true,
         points: true,
-        rodLevel: true
-      }
+        rodLevel: true,
+      },
     });
 
-    res.json({ 
+    const io = req.app.get("io");
+
+    const leaderboard = await prisma.user.findMany({
+      where: { isVerified: true },
+      orderBy: { points: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        email: true,
+        points: true,
+      },
+    });
+
+    io.emit("leaderboard:update", leaderboard);
+
+    res.json({
       success: true,
-      fish, 
-      reward, 
-      user: updated 
+      fish,
+      reward,
+      user: updated,
     });
   } catch (err) {
     console.error("Fishing error:", err);
@@ -109,8 +132,8 @@ exports.upgradeRod = async (req, res) => {
       select: {
         id: true,
         gold: true,
-        rodLevel: true
-      }
+        rodLevel: true,
+      },
     });
 
     if (!user) {
@@ -127,16 +150,18 @@ exports.upgradeRod = async (req, res) => {
       return res.status(400).json({
         message: `Rod already at max level (${MAX_ROD_LEVEL})`,
         currentLevel: user.rodLevel,
-        maxLevel: MAX_ROD_LEVEL
+        maxLevel: MAX_ROD_LEVEL,
       });
     }
 
     const cost = upgradeCost[user.rodLevel];
 
     // Validate cost exists and is valid
-    if (typeof cost !== 'number' || cost < 0) {
+    if (typeof cost !== "number" || cost < 0) {
       console.error(`Invalid upgrade cost for level ${user.rodLevel}: ${cost}`);
-      return res.status(500).json({ message: "Invalid upgrade cost configuration" });
+      return res
+        .status(500)
+        .json({ message: "Invalid upgrade cost configuration" });
     }
 
     if (user.gold < cost) {
@@ -144,26 +169,26 @@ exports.upgradeRod = async (req, res) => {
         message: "Not enough gold",
         required: cost,
         current: user.gold,
-        needed: cost - user.gold
+        needed: cost - user.gold,
       });
     }
 
     // Use transaction to prevent race conditions
     const updated = await prisma.user.update({
-      where: { 
+      where: {
         id: userId,
         gold: { gte: cost }, // Double-check gold is still sufficient
-        rodLevel: user.rodLevel // Ensure level hasn't changed
+        rodLevel: user.rodLevel, // Ensure level hasn't changed
       },
       data: {
         gold: { decrement: cost },
-        rodLevel: { increment: 1 }
+        rodLevel: { increment: 1 },
       },
       select: {
         id: true,
         gold: true,
-        rodLevel: true
-      }
+        rodLevel: true,
+      },
     });
 
     res.json({
@@ -171,13 +196,14 @@ exports.upgradeRod = async (req, res) => {
       message: "Rod upgraded successfully",
       rodLevel: updated.rodLevel,
       gold: updated.gold,
-      costPaid: cost
+      costPaid: cost,
     });
   } catch (err) {
     // Handle Prisma not found error (race condition)
-    if (err.code === 'P2025') {
-      return res.status(409).json({ 
-        message: "Upgrade failed. Your gold or rod level may have changed. Please try again." 
+    if (err.code === "P2025") {
+      return res.status(409).json({
+        message:
+          "Upgrade failed. Your gold or rod level may have changed. Please try again.",
       });
     }
     console.error("Rod upgrade error:", err);
