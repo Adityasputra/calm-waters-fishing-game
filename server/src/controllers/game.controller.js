@@ -105,18 +105,15 @@ exports.fish = async (req, res) => {
       take: 10,
       select: {
         id: true,
-        email: true,
-        isGuest: true,
+        username: true,
         points: true,
       },
     });
 
-    // Map email to username for frontend
+    // Format leaderboard for frontend
     const formattedLeaderboard = leaderboard.map(user => ({
       id: user.id,
-      username: user.isGuest 
-        ? `Guest-${user.id.slice(0, 6)}` 
-        : (user.email || `User-${user.id.slice(0, 6)}`),
+      username: user.username || `User-${user.id.slice(0, 6)}`,
       points: user.points
     }));
 
@@ -424,18 +421,15 @@ exports.release = async (req, res) => {
                 take: 10,
                 select: {
                     id: true,
-                    email: true,
-                    isGuest: true,
+                    username: true,
                     points: true,
                 },
             });
 
-            // Map email to username for frontend
+            // Format leaderboard for frontend
             const formattedLeaderboard = leaderboard.map(user => ({
                 id: user.id,
-                username: user.isGuest 
-                    ? `Guest-${user.id.slice(0, 6)}` 
-                    : (user.email || `User-${user.id.slice(0, 6)}`),
+                username: user.username || `User-${user.id.slice(0, 6)}`,
                 points: user.points
             }));
 
