@@ -5,151 +5,115 @@ export default function Home() {
     const navigate = useNavigate();
     const [showGuestWarning, setShowGuestWarning] = useState(false);
 
-    const handleEmailLogin = () => {
-        navigate('/login');
-    };
-
-    const handleGuestLogin = () => {
-        setShowGuestWarning(true);
-    };
-
-    const confirmGuestLogin = () => {
-        navigate('/guest');
-    };
-
-    const cancelGuestLogin = () => {
-        setShowGuestWarning(false);
-    };
-
     return (
-        <div className="w-screen h-screen bg-gradient-to-br from-sky-200 via-teal-100 to-amber-50 flex items-center justify-center overflow-hidden relative">
-            {/* Subtle water ripple effect overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-teal-300/20 via-transparent to-sky-200/30"></div>
-            
-            {/* Floating decorative elements */}
-            <div className="absolute top-20 left-20 w-32 h-32 bg-teal-300/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-32 right-32 w-40 h-40 bg-sky-300/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-            <div className="absolute top-1/3 right-1/4 w-24 h-24 bg-emerald-300/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="w-full min-h-screen bg-gradient-to-br from-sky-200 via-teal-100 to-amber-50 flex items-center justify-center relative overflow-hidden">
 
-            {/* Main content container */}
-            <div className="relative z-10 max-w-xl w-full px-8">
-                {/* Game title with fishing icon */}
-                <div className="text-center mb-12">
-                    <div className="flex justify-center mb-6">
-                        <div className="text-8xl animate-bounce">🎣</div>
+            {/* soft water overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-teal-300/15 via-transparent to-sky-200/25" />
+
+            {/* ambient blur */}
+            <div className="absolute top-24 left-24 w-28 h-28 bg-teal-300/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-24 right-24 w-32 h-32 bg-sky-300/20 rounded-full blur-3xl animate-pulse delay-700" />
+
+            {/* CONTENT */}
+            <div className="relative z-10 w-full max-w-sm md:max-w-md xl:max-w-lg px-4">
+
+                {/* TITLE */}
+                <div className="text-center mb-8">
+                    <div className="flex justify-center mb-4">
+                        <div className="text-5xl md:text-6xl xl:text-7xl">🎣</div>
                     </div>
-                    <h1 className="text-6xl font-bold text-teal-800 mb-3 tracking-wide drop-shadow-lg">
-                        Tranquil Waters
+
+                    <h1 className="text-3xl md:text-4xl xl:text-5xl font-bold text-teal-800 drop-shadow">
+                        Calm Waters
                     </h1>
-                    <p className="text-xl text-teal-600 font-medium">A Peaceful Fishing Journey</p>
-                    <div className="h-1 w-32 bg-gradient-to-r from-transparent via-teal-400 to-transparent mx-auto mt-4"></div>
+
+                    <p className="text-sm md:text-base xl:text-lg text-teal-600 mt-1">
+                        A Peaceful Fishing Journey
+                    </p>
+
+                    <div className="h-1 w-20 bg-gradient-to-r from-transparent via-teal-400 to-transparent mx-auto mt-3" />
                 </div>
 
-                {/* Login card */}
-                <div className="bg-white/80 backdrop-blur-lg border-2 border-teal-200/50 rounded-3xl p-10 shadow-2xl shadow-teal-900/10">
-                    <h2 className="text-2xl font-semibold text-teal-800 text-center mb-8">
+                {/* CARD */}
+                <div className="bg-white/85 backdrop-blur-md border border-teal-200/50 rounded-2xl p-5 md:p-6 xl:p-8 shadow-xl">
+
+                    <h2 className="text-lg md:text-xl font-semibold text-teal-800 text-center mb-6">
                         Welcome Back, Angler
                     </h2>
 
-                    {/* Email Login Button - Primary */}
+                    {/* EMAIL LOGIN */}
                     <button
-                        onClick={handleEmailLogin}
-                        className="w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/30 mb-5"
+                        onClick={() => navigate('/login')}
+                        className="w-full bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-white font-semibold text-sm md:text-base py-3 rounded-xl transition-all hover:shadow-lg mb-4"
                     >
-                        <div className="flex items-center justify-center gap-3">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <div className="flex items-center justify-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                             <span>Sign In with Email</span>
                         </div>
                     </button>
 
-                    {/* Divider */}
-                    <div className="flex items-center gap-4 my-6">
-                        <div className="flex-1 h-px bg-teal-200"></div>
-                        <span className="text-teal-500 font-medium text-sm">or</span>
-                        <div className="flex-1 h-px bg-teal-200"></div>
+                    {/* DIVIDER */}
+                    <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-teal-200" />
+                        <span className="text-xs text-teal-500">or</span>
+                        <div className="flex-1 h-px bg-teal-200" />
                     </div>
 
-                    {/* Guest Login Warning - Soft and gentle */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5">
-                        <div className="flex items-start gap-3">
-                            <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                            </svg>
-                            <div className="flex-1">
-                                <p className="text-amber-800 font-medium text-sm mb-1">Quick Play Notice</p>
-                                <p className="text-amber-700 text-xs leading-relaxed">
-                                    Your progress won't be saved in guest mode. Sign in to keep your catches and achievements.
-                                </p>
-                            </div>
-                        </div>
+                    {/* GUEST INFO */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+                        <p className="text-xs text-amber-700 leading-relaxed">
+                            Guest mode does not save progress.
+                        </p>
                     </div>
 
-                    {/* Guest Login Button - Secondary */}
+                    {/* GUEST LOGIN */}
                     <button
-                        onClick={handleGuestLogin}
-                        className="w-full bg-teal-100 hover:bg-teal-200 text-teal-700 font-semibold text-lg py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] border border-teal-200 hover:border-teal-300"
+                        onClick={() => setShowGuestWarning(true)}
+                        className="w-full bg-teal-100 hover:bg-teal-200 text-teal-700 font-semibold text-sm md:text-base py-3 rounded-xl border border-teal-200 transition-all"
                     >
-                        <div className="flex items-center justify-center gap-3">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>Cast as Guest</span>
-                        </div>
+                        Cast as Guest
                     </button>
                 </div>
 
-                {/* Footer text */}
-                <p className="text-center text-teal-600 mt-6 text-sm">
-                    🌊 Find your perfect catch in calm waters
+                {/* FOOTER */}
+                <p className="text-center text-xs text-teal-600 mt-5">
+                    🌊 Calm waters, calm mind
                 </p>
             </div>
 
-            {/* Guest Login Warning Modal */}
+            {/* MODAL */}
             {showGuestWarning && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border-4 border-amber-400 animate-fade-in">
-                        <div className="text-center mb-6">
-                            <div className="text-7xl mb-4 animate-bounce">⚠️</div>
-                            <h3 className="text-2xl font-bold text-amber-800 mb-2">
-                                Guest Mode Warning
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full border-2 border-amber-400 shadow-2xl">
+
+                        <div className="text-center mb-4">
+                            <div className="text-5xl mb-2">⚠️</div>
+                            <h3 className="text-lg font-bold text-amber-800">
+                                Guest Mode
                             </h3>
                         </div>
 
-                        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-6">
-                            <ul className="space-y-3 text-amber-900">
-                                <li className="flex items-start gap-3">
-                                    <span className="text-xl flex-shrink-0">❌</span>
-                                    <span className="text-sm font-medium">Your progress will NOT be saved</span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-xl flex-shrink-0">❌</span>
-                                    <span className="text-sm font-medium">All catches and gold will be lost</span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-xl flex-shrink-0">❌</span>
-                                    <span className="text-sm font-medium">You won't appear on the leaderboard</span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <span className="text-xl flex-shrink-0">✅</span>
-                                    <span className="text-sm font-medium">Create an account to save your progress!</span>
-                                </li>
-                            </ul>
-                        </div>
+                        <ul className="text-sm text-amber-900 space-y-2 mb-5">
+                            <li>❌ Progress not saved</li>
+                            <li>✅ Create account anytime</li>
+                        </ul>
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                             <button
-                                onClick={cancelGuestLogin}
-                                className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105"
+                                onClick={() => setShowGuestWarning(false)}
+                                className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 rounded-lg"
                             >
-                                Sign Up Instead
+                                Sign Up
                             </button>
                             <button
-                                onClick={confirmGuestLogin}
-                                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all"
+                                onClick={() => navigate('/guest')}
+                                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 rounded-lg"
                             >
-                                Continue as Guest
+                                Continue
                             </button>
                         </div>
                     </div>
