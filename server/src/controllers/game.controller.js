@@ -93,18 +93,34 @@ exports.fish = async (req, res) => {
 
     const io = req.app.get("io");
 
+    // Fetch and broadcast updated leaderboard
     const leaderboard = await prisma.user.findMany({
-      where: { isVerified: true },
+      where: {
+        OR: [
+          { isVerified: true },
+          { isGuest: true }
+        ]
+      },
       orderBy: { points: "desc" },
       take: 10,
       select: {
         id: true,
         email: true,
+        isGuest: true,
         points: true,
       },
     });
 
-    io.emit("leaderboard:update", leaderboard);
+    // Map email to username for frontend
+    const formattedLeaderboard = leaderboard.map(user => ({
+      id: user.id,
+      username: user.isGuest 
+        ? `Guest-${user.id.slice(0, 6)}` 
+        : (user.email || `User-${user.id.slice(0, 6)}`),
+      points: user.points
+    }));
+
+    io.emit("leaderboard:update", formattedLeaderboard);
 
     res.json({
       success: true,
@@ -398,17 +414,32 @@ exports.release = async (req, res) => {
         const io = req.app.get("io");
         if (io) {
             const leaderboard = await prisma.user.findMany({
-                where: { isVerified: true },
+                where: {
+                    OR: [
+                        { isVerified: true },
+                        { isGuest: true }
+                    ]
+                },
                 orderBy: { points: "desc" },
                 take: 10,
                 select: {
                     id: true,
                     email: true,
+                    isGuest: true,
                     points: true,
                 },
             });
 
-            io.emit("leaderboard:update", leaderboard);
+            // Map email to username for frontend
+            const formattedLeaderboard = leaderboard.map(user => ({
+                id: user.id,
+                username: user.isGuest 
+                    ? `Guest-${user.id.slice(0, 6)}` 
+                    : (user.email || `User-${user.id.slice(0, 6)}`),
+                points: user.points
+            }));
+
+            io.emit("leaderboard:update", formattedLeaderboard);
         }
 
         res.json({

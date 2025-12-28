@@ -14,6 +14,6 @@ exports.getFish = (rodLevel) => {
   if (roll < chance.epic + chance.rare) return "rare";
   if (roll < chance.epic + chance.rare + chance.normal) return "normal";
 
-  return null; // ikan kabur
+  return null;
 };
 
