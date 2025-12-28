@@ -357,7 +357,7 @@ exports.guestLogin = async (req, res) => {
 
 exports.convertGuestToUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Validate authenticated user
     if (!req.user || !req.user.id) {
@@ -367,11 +367,25 @@ exports.convertGuestToUser = async (req, res) => {
     const userId = req.user.id;
 
     // Input validation
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Username, email and password are required" });
     }
 
+    const trimmedUsername = username.trim();
     const trimmedEmail = email.trim().toLowerCase();
+
+    // Validate username
+    if (trimmedUsername.length < 3) {
+      return res.status(400).json({ message: "Username must be at least 3 characters" });
+    }
+    if (trimmedUsername.length > 20) {
+      return res.status(400).json({ message: "Username must be at most 20 characters" });
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+      return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+    }
+
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -406,12 +420,23 @@ exports.convertGuestToUser = async (req, res) => {
       });
     }
 
+    // Check if username is already taken
+    const existingUsername = await prisma.user.findUnique({ 
+      where: { username: trimmedUsername } 
+    });
+    
+    if (existingUsername) {
+      return res.status(400).json({ 
+        message: "Username already taken" 
+      });
+    }
+
     // Check if email is already taken
-    const existingUser = await prisma.user.findUnique({ 
+    const existingEmail = await prisma.user.findUnique({ 
       where: { email: trimmedEmail } 
     });
     
-    if (existingUser) {
+    if (existingEmail) {
       return res.status(400).json({ 
         message: "Email already registered by another user" 
       });
@@ -428,6 +453,7 @@ exports.convertGuestToUser = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
+        username: trimmedUsername,
         email: trimmedEmail,
         password: hashed,
         isGuest: false,
@@ -437,6 +463,7 @@ exports.convertGuestToUser = async (req, res) => {
       },
       select: {
         id: true,
+        username: true,
         email: true,
         gold: true,
         points: true,

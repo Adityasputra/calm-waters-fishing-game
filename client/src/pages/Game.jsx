@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import api from "../api/api";
 import HoldButton from "../components/HoldButton";
 import Leaderboard from "../components/Leaderboard";
 import UpgradeButton from "../components/UpgradeButton";
+import ConvertToUser from "../components/ConvertToUser";
 
 export default function Game() {
   const navigate = useNavigate();
@@ -13,6 +14,25 @@ export default function Game() {
   const [error, setError] = useState(null);
   const [lastCatch, setLastCatch] = useState(null);
   const [fishing, setFishing] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/game/profile");
+        setUser(res.data.user);
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        if (err.response?.status === 401) {
+          logout();
+          navigate('/');
+        }
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -176,7 +196,19 @@ export default function Game() {
                 <span className="text-4xl">🎣</span>
                 <span>Angler's Hub</span>
               </h2>
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 flex justify-end gap-2">
+                {user && user.isGuest && (
+                  <button
+                    onClick={() => setShowConvertModal(true)}
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all border border-amber-400 hover:border-amber-500 flex items-center gap-2 shadow-lg"
+                    title="Save your progress"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    <span>Save</span>
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all border border-white/30 hover:border-white/50 flex items-center gap-2"
@@ -274,6 +306,14 @@ export default function Game() {
 
         </div>
       </div>
+
+      {/* Convert Guest to User Modal */}
+      {showConvertModal && user && (
+        <ConvertToUser 
+          currentUser={user} 
+          onClose={() => setShowConvertModal(false)} 
+        />
+      )}
     </div>
   );
 }
