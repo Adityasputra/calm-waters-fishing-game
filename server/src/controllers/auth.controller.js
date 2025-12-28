@@ -7,14 +7,28 @@ const { generateOTP } = require("../utils/otp");
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Input validation
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Username, email and password are required" });
     }
 
+    const trimmedUsername = username.trim();
     const trimmedEmail = email.trim().toLowerCase();
+
+    // Validate username
+    if (trimmedUsername.length < 3) {
+      return res.status(400).json({ message: "Username must be at least 3 characters" });
+    }
+    if (trimmedUsername.length > 20) {
+      return res.status(400).json({ message: "Username must be at most 20 characters" });
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+      return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+    }
+
+    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -24,9 +38,15 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Password must be at least 8 characters" });
     }
 
-    // Check existing user
-    const existing = await prisma.user.findUnique({ where: { email: trimmedEmail } });
-    if (existing) {
+    // Check existing username
+    const existingUsername = await prisma.user.findUnique({ where: { username: trimmedUsername } });
+    if (existingUsername) {
+      return res.status(400).json({ message: "Username already taken" });
+    }
+
+    // Check existing email
+    const existingEmail = await prisma.user.findUnique({ where: { email: trimmedEmail } });
+    if (existingEmail) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
@@ -35,6 +55,7 @@ exports.register = async (req, res) => {
 
     await prisma.user.create({
       data: {
+        username: trimmedUsername,
         email: trimmedEmail,
         password: hashed,
         otpCode: otp,
@@ -277,9 +298,14 @@ exports.login = async (req, res) => {
 
 exports.guestLogin = async (req, res) => {
   try {
+    // Generate unique guest username
+    const guestNumber = Math.floor(Math.random() * 99999);
+    const guestUsername = `Guest${guestNumber}`;
+
     // Create a guest user in database
     const guestUser = await prisma.user.create({
       data: {
+        username: guestUsername,
         isGuest: true,
         gold: 0,
         points: 0,
@@ -287,6 +313,7 @@ exports.guestLogin = async (req, res) => {
       },
       select: {
         id: true,
+        username: true,
         gold: true,
         points: true,
         rodLevel: true

@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id         String  @id @default(uuid())
+  username   String? @unique
   email      String? @unique
   password   String?
   isGuest    Boolean @default(false)
@@ -28,6 +29,7 @@ model User {
 
   @@index([points(sort: Desc)], name: "idx_user_points")
   @@index([isVerified, isGuest], name: "idx_user_verified_guest")
+  @@index([username], name: "idx_user_username")
 }
 
 model FishingSession {
