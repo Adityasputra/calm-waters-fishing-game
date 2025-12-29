@@ -146,6 +146,16 @@ exports.verifyOtp = async (req, res) => {
         otpExpires: null,
         otpResendCount: 0,
         otpLastResent: null
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        gold: true,
+        points: true,
+        rodLevel: true,
+        isGuest: true,
+        isVerified: true
       }
     });
 
@@ -159,11 +169,7 @@ exports.verifyOtp = async (req, res) => {
     res.json({ 
       message: "Email verified successfully",
       token,
-      user: {
-        id: updatedUser.id,
-        username: updatedUser.username,
-        email: updatedUser.email
-      }
+      user: updatedUser
     });
   } catch (err) {
     console.error("OTP verification error:", err);
@@ -216,6 +222,7 @@ exports.resendOtp = async (req, res) => {
     const RESEND_WINDOW = 60 * 60 * 1000; // 1 hour window
     
     const now = new Date();
+    let currentResendCount = user.otpResendCount || 0;
     
     // Check cooldown period (60 seconds between resends)
     if (user.otpLastResent) {
@@ -230,15 +237,12 @@ exports.resendOtp = async (req, res) => {
       
       // Reset counter if more than 1 hour has passed
       if (timeSinceLastResend > RESEND_WINDOW) {
-        await prisma.user.update({
-          where: { email: trimmedEmail },
-          data: { otpResendCount: 0 }
-        });
+        currentResendCount = 0;
       }
     }
     
     // Check max resend limit
-    if (user.otpResendCount >= MAX_RESENDS) {
+    if (currentResendCount >= MAX_RESENDS) {
       return res.status(429).json({ 
         message: "Maximum OTP resend limit reached. Please try again in 1 hour or contact support.",
         error: "max_resends_reached"
@@ -254,7 +258,7 @@ exports.resendOtp = async (req, res) => {
       data: {
         otpCode: otp,
         otpExpires: otpExpires,
-        otpResendCount: { increment: 1 },
+        otpResendCount: currentResendCount + 1,
         otpLastResent: now
       }
     });
@@ -319,6 +323,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    if (user.isGuest) {
+      return res.status(403).json({ message: "Guest accounts cannot login. Please convert your account first." });
+    }
+
     if (!user.isVerified) {
       return res.status(403).json({ message: "Email not verified. Please verify your email first." });
     }
@@ -343,7 +351,13 @@ exports.login = async (req, res) => {
       token,
       user: {
         id: user.id,
-        email: user.email
+        username: user.username,
+        email: user.email,
+        gold: user.gold,
+        points: user.points,
+        rodLevel: user.rodLevel,
+        isGuest: user.isGuest,
+        isVerified: user.isVerified
       }
     });
   } catch (err) {
@@ -488,8 +502,6 @@ exports.convertGuestToUser = async (req, res) => {
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    console.log(`[DEBUG] Generated OTP for ${trimmedEmail}: ${otp}`);
-
     // Update guest user to regular user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -548,11 +560,6 @@ exports.convertGuestToUser = async (req, res) => {
         command: emailErr.command,
         response: emailErr.response
       });
-      
-      // Remove debug log in production
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[DEBUG] OTP for ${trimmedEmail}: ${otp}`);
-      }
       
       return res.status(201).json({ 
         message: "Account converted but failed to send OTP email. Please use /auth/resend-otp to get your verification code.",
