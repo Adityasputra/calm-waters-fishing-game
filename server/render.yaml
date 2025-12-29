@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: fishing-game-server
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+
+databases:
+  - name: fishing-game-db
+    databaseName: fishing_game
+    user: fishing_user
+    region: oregon
+    plan: free
