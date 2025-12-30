@@ -2,6 +2,14 @@
 
 A real-time multiplayer fishing game built with React and Node.js, featuring an engaging balance-based fishing mechanic, upgradeable equipment, and live leaderboards.
 
+## 📸 Screenshots
+
+### Login Screen
+![Login Screen](resources/front.png)
+
+### In-Game Fishing
+![Gameplay](resources/game.png)
+
 ## ✨ Features
 
 ### 🎮 Gameplay
